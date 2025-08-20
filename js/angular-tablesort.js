@@ -266,16 +266,26 @@ tableSortModule.directive( 'tsWrapper', ['$parse', '$compile', function( $parse,
                 $scope.pagination.perPageOptions = $scope.$eval($attrs.tsPerPageOptions);
             }
 
-            if( $attrs.tsPerPageDefault ) {
-                var defaultPerPage = $scope.$eval($attrs.tsPerPageDefault);
-                if( !isNaN(defaultPerPage) ) {
+            const evaluatePerPage = function (val) {
+                const defaultPerPage = $scope.$eval(val);
+                if (!isNaN(defaultPerPage)) {
                     $scope.pagination.perPage = defaultPerPage;
                     if( $scope.pagination.perPageOptions.indexOf($scope.pagination.perPage) === -1 ) {
-                        //If a default per-page option was added that isn't in the array, add it and sort the array
+                        // If a default per-page option was added that isn't in the array, add it and sort the array
                         $scope.pagination.perPageOptions.push($scope.pagination.perPage);
                         $scope.pagination.perPageOptions.sort(function (a,b) {return a - b;});
                     }
                 }
+            };
+
+            if ($attrs.tsPerPageDefault) {
+                evaluatePerPage($attrs.tsPerPageDefault);
+
+                $attrs.$observe('tsPerPageDefault', function(newValue, oldValue) {
+                    if (newValue !== oldValue) {
+                        evaluatePerPage(newValue);
+                    }
+                });
             }
 
             if( $attrs.tsFilterFields ) {
